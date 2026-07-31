@@ -101,7 +101,7 @@ Use [crontab.guru](https://crontab.guru) to build a different schedule.
 - `scripts/generate_heatmap.py` queries the [GitHub GraphQL API](https://docs.github.com/en/graphql) for your `contributionCalendar`.
 - Daily counts are bucketed into 5 intensity levels (0–4) using quartiles of your own activity, so the heatmap scales to *your* habits rather than a fixed global scale.
 - The ASCII grid uses `" ░ ▒ ▓ █"` for levels 0–4, laid out in the same week-column format GitHub uses.
-- The SVG is generated as plain markup (no external rendering dependencies) with per-cell `<title>` tooltips showing exact date/count.
+- The SVG is generated as plain markup (no external rendering dependencies) with per-cell `<title>` tooltips showing exact date/count, plus a built-in stats footer (year, total contributions, active days, best week, and both streaks with date ranges). The username/title itself isn't drawn inside the SVG — it's already shown by the `### {username}'s Contribution Heatmap` heading placed above it in your README, so it's not duplicated.
 - The script looks for `<!-- HEATMAP:START -->` / `<!-- HEATMAP:END -->` in your target README and replaces everything between them — if the markers aren't found, it appends the block to the end of the file instead.
 
 ---

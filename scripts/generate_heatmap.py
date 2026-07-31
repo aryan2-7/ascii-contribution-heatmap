@@ -187,37 +187,74 @@ def compute_stats(days):
     dates_sorted = sorted(by_date.keys())
 
     total = sum(by_date.values())
+    active_days = sum(1 for c in by_date.values() if c > 0)
 
-    # current streak: walk backward from most recent day
+    # best week: sum contributions in each 7-day block aligned to the grid weeks
+    weeks = build_week_grid(days)
+    best_week = 0
+    for week in weeks:
+        week_total = sum(d["count"] for d in week if d)
+        best_week = max(best_week, week_total)
+
+    # current streak: walk backward from most recent day, track date range
     current_streak = 0
-    today = dates_sorted[-1]
+    current_streak_start = None
+    current_streak_end = dates_sorted[-1]
     idx = len(dates_sorted) - 1
-    # allow the streak to "count" through today even if today is 0 so far,
-    # by starting the check from the most recent day with data
     while idx >= 0 and by_date[dates_sorted[idx]] > 0:
         current_streak += 1
+        current_streak_start = dates_sorted[idx]
         idx -= 1
 
-    # longest streak overall
+    # longest streak overall, track date range
     longest_streak = 0
+    longest_streak_start = None
+    longest_streak_end = None
     running = 0
+    running_start = None
     for date in dates_sorted:
         if by_date[date] > 0:
+            if running == 0:
+                running_start = date
             running += 1
-            longest_streak = max(longest_streak, running)
+            if running > longest_streak:
+                longest_streak = running
+                longest_streak_start = running_start
+                longest_streak_end = date
         else:
             running = 0
 
     busiest_date = max(by_date, key=by_date.get)
     busiest_count = by_date[busiest_date]
 
+    # the "year" label — most common year in the dataset (handles the
+    # rolling 12-month window spanning two calendar years)
+    year_counts = {}
+    for date in dates_sorted:
+        y = date[:4]
+        year_counts[y] = year_counts.get(y, 0) + 1
+    year_label = max(year_counts, key=year_counts.get)
+
     return {
+        "year": year_label,
         "total": total,
+        "active_days": active_days,
+        "best_week": best_week,
         "current_streak": current_streak,
+        "current_streak_start": current_streak_start,
+        "current_streak_end": current_streak_end,
         "longest_streak": longest_streak,
+        "longest_streak_start": longest_streak_start,
+        "longest_streak_end": longest_streak_end,
         "busiest_date": busiest_date,
         "busiest_count": busiest_count,
     }
+
+
+def format_date_short(iso_date):
+    """'2026-07-21' -> 'Jul 21'"""
+    d = datetime.date.fromisoformat(iso_date)
+    return f"{MONTH_ABBR[d.month - 1]} {d.day}"
 
 
 # ---------------------------------------------------------------------------
@@ -300,8 +337,8 @@ def render_svg(weeks, palette, username, stats):
     cell = 11
     gap = 3
     pad_left = 30
-    pad_top = 40
-    pad_bottom = 30
+    pad_top = 18
+    pad_bottom = 52  # room for legend row + two stats lines
 
     n_weeks = len(weeks)
     width = pad_left + n_weeks * (cell + gap) + 20
@@ -314,11 +351,6 @@ def render_svg(weeks, palette, username, stats):
     )
     parts.append(f'<rect width="100%" height="100%" fill="{palette[0]}" rx="8"/>')
 
-    title = f"{username}'s contribution heatmap"
-    parts.append(
-        f'<text x="{pad_left}" y="20" fill="#c9d1d9" font-size="13" font-weight="bold">{title}</text>'
-    )
-
     # month labels
     last_month = None
     for col, week in enumerate(weeks):
@@ -328,7 +360,7 @@ def render_svg(weeks, palette, username, stats):
             if month != last_month:
                 x = pad_left + col * (cell + gap)
                 parts.append(
-                    f'<text x="{x}" y="{pad_top - 8}" fill="#8b949e" font-size="9">{MONTH_ABBR[month-1]}</text>'
+                    f'<text x="{x}" y="{pad_top - 6}" fill="#8b949e" font-size="9">{MONTH_ABBR[month-1]}</text>'
                 )
                 last_month = month
 
@@ -349,8 +381,9 @@ def render_svg(weeks, palette, username, stats):
                 f'</rect>'
             )
 
-    # legend
-    legend_y = height - 18
+    # legend row
+    grid_bottom = pad_top + 7 * (cell + gap)
+    legend_y = grid_bottom + 14
     parts.append(f'<text x="{pad_left}" y="{legend_y}" fill="#8b949e" font-size="9">Less</text>')
     lx = pad_left + 32
     for level, color in enumerate(palette):
@@ -358,14 +391,28 @@ def render_svg(weeks, palette, username, stats):
         lx += cell + gap
     parts.append(f'<text x="{lx + 4}" y="{legend_y}" fill="#8b949e" font-size="9">More</text>')
 
-    # stats line
-    stats_text = (
-        f'Total: {stats["total"]}  |  Current streak: {stats["current_streak"]}  |  '
-        f'Longest streak: {stats["longest_streak"]}'
+    # stats line 1: year summary
+    stats_line1 = (
+        f'{stats["year"]}  ·  {stats["total"]} contributions  ·  '
+        f'{stats["active_days"]} active days  ·  best week {stats["best_week"]}'
     )
+    stats_y1 = legend_y + 16
     parts.append(
-        f'<text x="{lx + 60}" y="{legend_y}" fill="#8b949e" font-size="9" text-anchor="end" '
-        f'transform="translate({width - lx - 64},0)">{stats_text}</text>'
+        f'<text x="{pad_left}" y="{stats_y1}" fill="#c9d1d9" font-size="9">{stats_line1}</text>'
+    )
+
+    # stats line 2: streaks with date ranges
+    cur_start = format_date_short(stats["current_streak_start"]) if stats["current_streak_start"] else "—"
+    cur_end = format_date_short(stats["current_streak_end"]) if stats["current_streak_start"] else "—"
+    long_start = format_date_short(stats["longest_streak_start"]) if stats["longest_streak_start"] else "—"
+    long_end = format_date_short(stats["longest_streak_end"]) if stats["longest_streak_start"] else "—"
+    stats_line2 = (
+        f'current streak {stats["current_streak"]}d ({cur_start} – {cur_end})  ·  '
+        f'longest {stats["longest_streak"]}d ({long_start} – {long_end})'
+    )
+    stats_y2 = stats_y1 + 14
+    parts.append(
+        f'<text x="{pad_left}" y="{stats_y2}" fill="#c9d1d9" font-size="9">{stats_line2}</text>'
     )
 
     parts.append("</svg>")
@@ -398,10 +445,23 @@ def build_block(ascii_art, svg_path, username, stats):
     lines.append("</details>")
     lines.append("")
     lines.append(
-        f"**Total:** {stats['total']} &nbsp;|&nbsp; "
-        f"**Current streak:** {stats['current_streak']} days &nbsp;|&nbsp; "
-        f"**Longest streak:** {stats['longest_streak']} days &nbsp;|&nbsp; "
-        f"**Busiest day:** {stats['busiest_date']} ({stats['busiest_count']} contributions)"
+        f"**{stats['year']}** &nbsp;·&nbsp; "
+        f"{stats['total']} contributions &nbsp;·&nbsp; "
+        f"{stats['active_days']} active days &nbsp;·&nbsp; "
+        f"best week {stats['best_week']}"
+    )
+    lines.append("")
+    cur_start = format_date_short(stats["current_streak_start"]) if stats["current_streak_start"] else "—"
+    cur_end = format_date_short(stats["current_streak_end"]) if stats["current_streak_start"] else "—"
+    long_start = format_date_short(stats["longest_streak_start"]) if stats["longest_streak_start"] else "—"
+    long_end = format_date_short(stats["longest_streak_end"]) if stats["longest_streak_start"] else "—"
+    lines.append(
+        f"current streak **{stats['current_streak']}d** ({cur_start} – {cur_end}) &nbsp;·&nbsp; "
+        f"longest **{stats['longest_streak']}d** ({long_start} – {long_end})"
+    )
+    lines.append("")
+    lines.append(
+        f"Busiest day: {stats['busiest_date']} ({stats['busiest_count']} contributions)"
     )
     lines.append("")
     lines.append(f"_Last updated: {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}_")
