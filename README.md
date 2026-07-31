@@ -117,6 +117,9 @@ python scripts/generate_heatmap.py
 
 This writes `assets/heatmap.svg` and `assets/heatmap.txt`, and updates `README.md` in place.
 
+<!-- HEATMAP:START -->
+<!-- HEATMAP:END -->
+
 ---
 
 ## License
