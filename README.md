@@ -54,33 +54,6 @@ Open the README you want the heatmap to appear in, and paste this anywhere:
 
 ```markdown
 <!-- HEATMAP:START -->
-
-### aryan2-7's Contribution Heatmap
-
-<img src="assets/heatmap.svg" alt="aryan2-7 contribution heatmap" />
-
-<details>
-<summary>ASCII version (click to expand)</summary>
-
-```
-    Jul         Sep     Oct     Nov       Dec     Jan     Feb     Mar       Apr     May       Jun     Jul     
-Mon                                                                                         ▒ ▓ ░ ░ ▓ ▓ ▒   █ 
-                                                                                        █   ▒       ░ █     ▓ 
-Wed                                                     ▒ ░                               ░ ▓   ▓ ▒   ░ ░ █ ▒ 
-                                                                                          █ ▒   ░       ░ ▓ ░ 
-Fri                                                                                     ▓ ▓ ░   ▒ █ ░ ░   ░ █ 
-                                                                                          █   █     ▒ ▒ █ ▓ ▓ 
-                                                                                        ▓     ▒ ▒ ▓     ▒ █   
-
-Less   ░ ▒ ▓ █ More
-```
-
-</details>
-
-**Total:** 279 &nbsp;|&nbsp; **Current streak:** 11 days &nbsp;|&nbsp; **Longest streak:** 11 days &nbsp;|&nbsp; **Busiest day:** 2026-07-26 (23 contributions)
-
-_Last updated: 2026-07-31 01:41 UTC_
-
 <!-- HEATMAP:END -->
 ```
 
@@ -129,4 +102,23 @@ Use [crontab.guru](https://crontab.guru) to build a different schedule.
 - Daily counts are bucketed into 5 intensity levels (0–4) using quartiles of your own activity, so the heatmap scales to *your* habits rather than a fixed global scale.
 - The ASCII grid uses `" ░ ▒ ▓ █"` for levels 0–4, laid out in the same week-column format GitHub uses.
 - The SVG is generated as plain markup (no external rendering dependencies) with per-cell `<title>` tooltips showing exact date/count.
-- The script looks for `<!-- HEATMAP:START -->` / `
+- The script looks for `<!-- HEATMAP:START -->` / `<!-- HEATMAP:END -->` in your target README and replaces everything between them — if the markers aren't found, it appends the block to the end of the file instead.
+
+---
+
+## Running locally
+
+```bash
+pip install -r requirements.txt
+export GH_TOKEN=ghp_your_token_here
+export GH_USERNAME=your-username
+python scripts/generate_heatmap.py
+```
+
+This writes `assets/heatmap.svg` and `assets/heatmap.txt`, and updates `README.md` in place.
+
+---
+
+## License
+
+MIT — use it, fork it, ship it in your own profile.
