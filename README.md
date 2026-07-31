@@ -1,4 +1,4 @@
-# ASCII Contribution Heatmap 🟩
+# ASCII Contribution Heatmap 
 
 A GitHub contribution heatmap rendered in retro terminal block characters (`░ ▒ ▓ █`), auto-generated daily via GitHub Actions, and auto-injected into your README — no copy-pasting, no manual updates.
 
