@@ -1,6 +1,8 @@
 # ASCII Contribution Heatmap 
 
-A GitHub contribution heatmap rendered in retro terminal block characters (`░ ▒ ▓ █`), auto-generated daily via GitHub Actions, and auto-injected into your README — no copy-pasting, no manual updates.
+A GitHub contribution heatmap rendered in retro terminal block characters (`░ ▒ ▓ █`), auto-generated daily via GitHub Actions, and auto-injected into your README — no copy-pasting, no manual updates.<br>
+
+Also used in [my own README.md](https://github.com/aryan2-7/)
 
 Ships as **both** a raw ASCII text block *and* an SVG image, so it looks good whether you want the terminal aesthetic in a code fence or a crisp image embed.
 
