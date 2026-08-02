@@ -24,7 +24,9 @@ Fri ░ ▒   ▒ ░   ▒ ▓ █ ▒ ░ ░ █ ░ ▓     ▒ ▒ ░   �
     ░ █   ▓   ░ ▓ ▒ ▓     ▒ ▓ █ ░ █ ░ ░   █   █ █ ░ ▓   ░ █ ░   █ █   ▒   ░ ░ ░   ▒ ▒ ▓   ▓   ▓     ▒ ▓ ░     
 
 Less   ░ ▒ ▓ █ More
+
 ```
+> This ASCII vesion in the Profile README.md will not have the horizontal scrollbar that you may see here
 
 </details>
 
